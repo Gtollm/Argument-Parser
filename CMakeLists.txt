@@ -8,11 +8,10 @@ project(
 )
 
 set(CMAKE_CXX_STANDARD 20)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(lib)
 add_subdirectory(bin)
-
 
 enable_testing()
 add_subdirectory(tests)
