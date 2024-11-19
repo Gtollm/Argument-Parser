@@ -1,19 +1,40 @@
-
 #pragma once
+
+#include <string>
 #include <unordered_set>
 
-#include "Arguments.hpp"
+#include "AbstractArgument.hpp"
+#include "General.hpp"
+
+namespace ArgumentParser {
 
 class ArgumentVisitor {
  public:
-  virtual void Visit(const ArgumentBase& argument) = 0;
+  virtual bool Visit(const AbstractArgument& argument) = 0;
   virtual ~ArgumentVisitor() = default;
 };
 
 class UniquenessVisitor : public ArgumentVisitor {
-  std::unordered_set<std::string> longArgs_;
-  std::unordered_set<char> shortArgs_;
+  std::unordered_set<std::string> long_args_;
+  std::unordered_set<char> short_args_;
 
  public:
-  void Visit(const ArgumentBase& argument) override;
+  ~UniquenessVisitor() = default;
+  bool Visit(const AbstractArgument& argument) override;
 };
+
+class ValueSpecifiedVisitor : public ArgumentVisitor {
+ public:
+  ~ValueSpecifiedVisitor() = default;
+  bool Visit(const AbstractArgument& argument) override;
+};
+
+class MultiValidVisitor : public ArgumentVisitor {
+ public:
+  ~MultiValidVisitor() = default;
+  bool Visit(const AbstractArgument& argument) override;
+};
+
+}  // namespace ArgumentParser
+
+#include "ArgumentVisitor.tpp"
