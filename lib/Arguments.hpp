@@ -2,95 +2,90 @@
 
 #include <concepts>
 #include <cstddef>
+#include <cstdint>
+#include <initializer_list>
+#include <memory>
+#include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <type_traits>
+#include <unordered_map>
+#include <variant>
+#include <vector>
 
-#include "ArgumentVisitor.hpp">
+#include "AbstractArgument.hpp"
+#include "ArgumentVisitor.hpp"
 
-template <typename T>
-concept Parsable =
-    std::same_as<T, std::string> || requires(const std::string& str, T t) {
-      { std::istringstream{str} >> t };
-      { std::to_string(t) == str };
-      { std::to_string(t) } -> std::same_as<std::string>;
-    };
+namespace ArgumentParser {
 
-static_assert(Parsable<int>, "int is parsable");
-static_assert(Parsable<double>, "double is parsable");
-static_assert(Parsable<std::string>, "string is parsable");
-static_assert(Parsable<bool>, "bool is parsable");
-static_assert(!Parsable<void>, "void is not parsable");
-
-class ArgumentBase {
+class ArgumentBase : public AbstractArgument {
  public:
   virtual ~ArgumentBase() = default;
 
-  virtual void Accept(ArgumentVisitor& visitor) const = 0;
+  bool Accept(ArgumentVisitor& visitor) const;
 
-  virtual std::string Help() const = 0;
-  virtual void Reset() = 0;
-  virtual void SetArgument(const std::string_view& value) = 0;
-  virtual void Positional() = 0;
-  virtual void Multivalue(std::size_t start = 0) = 0;
+  void SetShortName(char short_name) override;
+  void SetLongName(const std::string_view& long_name) override;
+  void SetDescription(const std::string_view& description) override;
+  void MakeFlag() override;
+  void MakePositional() override;
+  void SetMultivalue(std::size_t min_amout) override;
 
-  ArgumentBase& WithShortName(const std::string_view& short_name);
-  ArgumentBase& WithLongName(const std::string_view& long_name);
-  ArgumentBase& WithDescription(const std::string_view& description_);
-
-  void SetShortName(const std::string_view& short_name);
-  void SetLongName(const std::string_view& long_name);
-  void SetDescription(const std::string_view& description_);
-
-  bool IsPositional() const { return positional_; }
-  std::optional<char> GetShortName() const;
-  std::optional<std::string> GetLongName() const;
-  std::optional<std::string> GetDescription() const;
+  bool IsPositional() const override;
+  bool IsMultivalue() const override;
+  bool IsFlag() const override;
+  std::optional<char> GetShortName() const override;
+  std::optional<std::string> GetLongName() const override;
+  std::optional<std::string> GetDescription() const override;
+  std::optional<std::size_t> GetMultivalue() const override;
 
  protected:
   std::optional<char> short_name_;
   std::optional<std::string> long_name_;
   std::optional<std::string> description_;
   bool positional_ = false;
-  std::size_t start_ = 0;
-};
-
-class Flag : public ArgumentBase {
- public:
-  void SetArgument(bool value);
-  bool GetArgument();
-  void Default(bool value);
-  void StoreValue(bool* storage);
-
-  std::string Help() const override;
-  void Reset() override;
-
-  void SetArgument(const std::string_view& value) override;
-  void Positional() override;
-  void Multivalue(std::size_t start = 0) override;
-
- private:
-  bool value_;
-  bool* storage_;
+  bool flag_ = false;
+  std::optional<std::size_t> miltivalue_;
 };
 
 template <Parsable T>
-class TypedArgument : public ArgumentBase {
+class Argument : public ArgumentBase {
  public:
-  virtual void SetArgument(const T& value) = 0;
-  virtual T GetArgument() = 0;
-  virtual void Default(const T& value) = 0;
-  virtual void StoreValue(T* storage) = 0;
+  Argument();
+  virtual ~Argument() = default;
+  void SetDefault(const T& value);
+  void SetDefault(const std::initializer_list<T>& values);
+  void SetDefault(const std::vector<T>& values);
 
-  std::string Help() const override;
+  void SetStorage(T& storage);
+  void SetStorage(std::vector<T>& storage);
+
+  void SetArgument(const T& value);
+  std::optional<T> GetArgument();
+  std::optional<T> GetArgument(std::size_t index);
+  std::optional<const std::reference_wrapper<std::vector<T>>> GetArguments();
+
+  std::string Help(
+      std::shared_ptr<std::unordered_map<std::string, std::string>>
+          argument_types) const override;
   void Reset() override;
 
-  void SetArgument(const std::string_view& value) override;
-  void Positional() override;
-  void Multivalue(std::size_t start = 0) override;
+  void SetRawArgument(const std::string_view& value) override;
+  void SetRawArgument(const std::string& value) override;
+
+  std::size_t GetValuesNumber() const override;
+  std::size_t GetDefaultNumber() const override;
 
  private:
-  T value_;
-  T* storage_;
+  std::vector<T> value_;
+  std::optional<std::vector<T>> default_;
+
+  std::variant<std::monostate, std::reference_wrapper<T>,
+               std::reference_wrapper<std::vector<T>>>
+      storage_;
 };
+
+}  // namespace ArgumentParser
+
+#include "Arguments.tpp"
