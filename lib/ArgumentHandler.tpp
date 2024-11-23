@@ -138,8 +138,6 @@ bool TypeArgHandler::Handle(ParsingChainContext& context) {
 
 ValueArgHandler::ValueArgHandler() = default;
 
-// TODO: Implement one more handler, for MultiValue
-// NOTE: I most likely did it already, tests will show errors)
 bool ValueArgHandler::Handle(ParsingChainContext& context) {
   if (context.matched_argument) {
     if (context.matched_argument->IsFlag()) {
@@ -166,19 +164,5 @@ bool ValueArgHandler::Handle(ParsingChainContext& context) {
 void ValueArgHandler::SetBranch(std::shared_ptr<ArgumentHandler> branch) {
   this->branch_ = branch;
 }
-
-ValidateArgHandler::ValidateArgHandler(
-    std::shared_ptr<ParserContext> parser_context) {
-  parser_context_ = std::move(parser_context);
-}
-
-bool ValidateArgHandler::Handle(ParsingChainContext& context) {
-  return context.index = 0;
-}
-
-// bool ValidateArgHandler::Handle(ParsingContext& context) {
-//   visitor_->Visit(*context.matched_argument);
-//   return true;
-// }
 
 }  // namespace ArgumentParser

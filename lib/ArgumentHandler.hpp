@@ -120,16 +120,6 @@ class ValueArgHandler : public ArgumentHandler {
   std::shared_ptr<ArgumentHandler> branch_;
 };
 
-class ValidateArgHandler : public ArgumentHandler {
- public:
-  explicit ValidateArgHandler(std::shared_ptr<ParserContext> parser_context);
-
-  bool Handle(ParsingChainContext& context) override;
-
- private:
-  std::shared_ptr<ParserContext> parser_context_;
-};
-
 }  // namespace ArgumentParser
 
 #include "ArgumentHandler.tpp"
