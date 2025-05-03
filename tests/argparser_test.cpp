@@ -240,7 +240,7 @@ TEST(ArgParserTestSuite, FlagsTest2) {
   parser.AddFlag('b', "flag2").Default(false);
   parser.AddFlag('c', "flag3").StoreValue(flag3);
 
-  ASSERT_TRUE(parser.Parse(SplitString("app -a c")));
+  ASSERT_TRUE(parser.Parse(SplitString("app -a -c")));
   ASSERT_TRUE(parser.GetFlag("flag1"));
   ASSERT_FALSE(parser.GetFlag("flag2"));
   ASSERT_TRUE(flag3);

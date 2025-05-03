@@ -90,7 +90,8 @@ bool EmptySeparaterArgHandler::Handle(ParsingChainContext& context) {
 SpaceSeparaterArgHandler::SpaceSeparaterArgHandler() = default;
 
 bool SpaceSeparaterArgHandler::Handle(ParsingChainContext& context) {
-  if (context.value.empty() && context.Advance()) {
+  if (context.value.empty() && context.matched_argument &&
+      !context.matched_argument->IsFlag() && context.Advance()) {
     context.value = context.CurrentToken();
     return next_ ? next_->Handle(context) : true;
   }

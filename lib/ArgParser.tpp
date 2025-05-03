@@ -164,9 +164,9 @@ std::shared_ptr<ArgumentHandler> ArgParser::BuildHandlerChain(
   helper_handler->SetNext(positional_handler);
   positional_handler->SetNext(equal_handlern);
   equal_handlern->SetNext(emptyHandler);
-  emptyHandler->SetNext(space_handler);
-  space_handler->SetNext(type_handler);
-  type_handler->SetNext(value_handler);
+  emptyHandler->SetNext(type_handler);
+  type_handler->SetNext(space_handler);
+  space_handler->SetNext(value_handler);
   value_handler->SetBranch(emptyHandler);
   return long_handler;
 }
